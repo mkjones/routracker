@@ -15,9 +15,18 @@
 <script>
 function success(position) {
   var s = document.querySelector('#status');
-
-  s.innerHTML = "found you!";
+  s.innerHTML = "found you at " +
+    position.coords.latitude + ", " +
+    position.coords.longitude;
   s.className = 'success';
+
+  var client = new XMLHttpRequest();
+  client.open("POST", "/waypoint");
+  client.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+  client.send(JSON.stringify({
+    'position':position,
+    'trip_id':{{ trip_id }},
+  }));
 
   var mapcanvas = document.createElement('div');
   mapcanvas.id = 'mapcanvas';
@@ -26,7 +35,8 @@ function success(position) {
 
   document.querySelector('article').appendChild(mapcanvas);
 
-  var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+  var latlng = new google.maps.LatLng(position.coords.latitude,
+                                      position.coords.longitude);
   var myOptions = {
     zoom: 15,
     center: latlng,
@@ -41,6 +51,8 @@ function success(position) {
       map: map,
       title:"You are here!"
   });
+  setTimeout(function() { navigator.geolocation.getCurrentPosition(success, error); },
+             1000);
 }
 
 function error(msg) {
